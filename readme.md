@@ -1,12 +1,12 @@
-## Protocolo
+# Protocolo
 
-# Partes Envolvidas
+## Partes Envolvidas
 
 → Cliente: A interface de usuário onde o usuário interage com o catálogo.
 → Servidor: A parte que mantém e gerencia a base de dados do catálogo.
 
 
-# Objetivos
+## Objetivos
 → Permitir que o cliente consulte, adicione, edite e exclua itens do catálogo.
 → Manter a base de dados do servidor do catálogo sincronizada com as ações do cliente. 
 
