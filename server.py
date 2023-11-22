@@ -1,58 +1,103 @@
 import socket
-import threading
-import time
 import catalogo
+import threading
+import json
 
-PORT = 5050
-HOST = '127.0.0.1'
+class ServerSocket:
+    def __init__(self, HOST, PORT):
+        
+        self.ADDR = (HOST, PORT)
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(self.ADDR)
 
-ADDR = (HOST, PORT)
+        self.clients = []
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(ADDR)
-clientes = []
+    def stop_server(self):
+        self.server.close()
 
-def handle_client(conn, addr):
-    try:
+    def start_server(self):
+        print("[!] O Servidor está inicializando...")
+        print("[!] LOG Message format: [LOG] [{NOME}]: {MENSAGEM}")
+        self.server.listen()
 
-        connected = True
+        print(f'[!] Servidor ativo [{self.ADDR[0]}]')
 
-        # Recebe nome de usuário do cliente
-        name = conn.recv(1024).decode('utf-8')
-        clientes.append((conn, name))
-        print(f"[!] [+] ({addr}) {name} conectou-se.")
+        # Inicializa o Banco de Dados do catálogo caso ele não exista
+        self.ctlg = catalogo.Catalogo()
+        self.ctlg._criar_tabelas()
 
+        # Se os tipos não tiverem cadastrados, o cadastro é feito.
+        # Tipos: (Filme, Serie, Anime, Outro)
+        if not self.ctlg.query_types():
+            self.ctlg._criar_tipos()
 
-        while connected:
-            msg = conn.recv(1024).decode('utf-8')
-            if msg:
-                print(f'[LOG] ({addr}) {name}: {msg}')
+        self.ctlg.close_connection()
 
-    finally:
-        clientes.remove((conn, name))
-        print(f'[LOG] Desconectando: ({addr,name})')
-        conn.close()
+        while True:
+            conn, addr = self.server.accept()
+            thread = threading.Thread(target=self.handle_client, args=(conn, addr))
+            thread.start()
+            print(f"[*] Conexões ativas: {threading.active_count() - 1}")
 
-def start():
-    server.listen()
-    print(f'[!] Servidor ativo [{HOST}]')
+    def send_data(self, conn, data):
+        message = json.dumps(data)
+        conn.send(message.encode())
 
-    # Inicializa o Banco de Dados do catálogo caso ele não exista
-    ctlg = catalogo.Catalogo()
+    def receive_data(self, conn):
+        data = conn.recv(1024).decode()
+        if data:
+            data = json.loads(data)
+        return data
 
-    # Se os tipos não tiverem cadastrados, o cadastro é feito.
-    # Tipos: (Filme, Serie, Anime, Outro)
-    if not ctlg.query_types():
-        ctlg._criar_tipos()
+    def handle_client(self, conn, addr):
+        client_username = ''
+        try:
+            connected = True
 
-    ctlg.close_connection()
+            # Rececbe o nome do usuário
+            data = self.receive_data(conn)
+            client_username = data['username']
+            self.clients.append((conn, client_username))
+            
+            # Mensagem de LOG
+            print(f"[!] [+] ({addr}) {client_username} conectou-se.")
 
-    while True:
-        conn, addr = server.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        print(f"[*] Conexões ativas: {threading.active_count() - 1}")
+            while connected:
 
-print("[!] O Servidor está inicializando...")
-print("[!] LOG Message format: [LOG] [{NOME}]: {MENSAGEM}")
-start()
+                # Recebe uma ação do cliente
+                data = self.receive_data(conn)
+                if not data:
+                    break
+                
+                # Conecta ao banco de dados
+                db = catalogo.Catalogo()
+                print(f'[LOG] ({addr}, {client_username}) : {data}')
+            
+                # Verifica qual ação foi requisitada ao servidor
+                if data['action'] == 'query_all':
+                    print('Solicitado query_all')
+                    response = {"data":[]}
+                    query = db.query_items()
+
+                    for x in query:
+                        response['data'].append({'id': x[0], 'nome': x[1], 'tipo': x[2]})
+                    
+                    print(response)
+                    # Enviar json com dados
+                    self.send_data(conn, response)
+
+        finally:
+            self.clients.remove((conn, client_username))
+            print(f'[LOG] Desconectando: ({addr,client_username})')
+            conn.close()
+
+def main():
+    
+    # Define porta e endereço do servidor
+    PORT = 5050
+    HOST = '127.0.0.1'
+    server = ServerSocket(HOST, PORT)
+    server.start_server()
+
+if __name__ == "__main__":
+    main()
