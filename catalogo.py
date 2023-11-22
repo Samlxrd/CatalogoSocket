@@ -4,7 +4,6 @@ class Catalogo:
     def __init__(self, nome_banco='catalogo.db'):
         self.conn = sqlite3.connect(nome_banco)
         self.c = self.conn.cursor()
-        self._criar_tabelas()
 
     def _criar_tabelas(self):
         # Criação da tabela "type" se ela não existir
@@ -24,6 +23,26 @@ class Catalogo:
                 FOREIGN KEY (itemtype) REFERENCES type(typeid)
             )
         ''')
+
+        # Criação da tabela "user" se ela não existir
+        self.c.execute('''
+            CREATE TABLE IF NOT EXISTS user (
+                userid INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE
+            )
+        ''')
+
+        # Criação da tabela "favs" se ela não existir
+        self.c.execute('''
+            CREATE TABLE IF NOT EXISTS favs (
+                favid INTEGER PRIMARY KEY AUTOINCREMENT,
+                favuser INTEGER,
+                favitem item,
+                FOREIGN KEY (favuser) REFERENCES user(userid),
+                FOREIGN KEY (favitem) REFERENCES user(itemid)
+            )
+        ''')
+
         self.conn.commit()
 
     def _criar_tipos(self):
