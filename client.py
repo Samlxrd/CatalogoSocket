@@ -2,13 +2,18 @@ import socket
 import json
 
 class ClientSocket:
-    def __init__(self, server, port):
+    def __init__(self, username, server, port):
         self.addr = (server, port)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connect()
+        self.send_username(username)
 
     def connect(self):
         self.client.connect(self.addr)
+
+    def send_username(self, username):
+        message = json.dumps({'username': username})
+        self.client.send(message.encode())
 
     def send_data(self, data):
         message = json.dumps(data)
@@ -16,31 +21,9 @@ class ClientSocket:
 
     def receive_data(self):
         data = self.client.recv(1024).decode()
-        return {'Resultado da Consulta'}
-
-    def search_data(data):
-        return {'Resultado da Consulta'}
-
-    def add_data(data):
-        return {'Resultado da Consulta'}
-    
-    def query_favourites(data):
-         #send_data(self, data):
-         #receive_data
-         #tratar resposta
-        return {'Resultado da Consulta'}
-
-    def edit_data(data_id, new_data):
-        return {'Resultado da Consulta'}
-
-    def delete_data(data_id):
-        return {'Resultado da Consulta'}
+        print('Recebido no cliente:\n', data)
+        data = json.loads(data)
+        return data
     
     def close_connection(self):
         self.client.close()
-
-# Como será feita a chamada
-PORT = 5050
-SERVER = '127.0.0.1'
-client_socket = ClientSocket(SERVER, PORT)
-
