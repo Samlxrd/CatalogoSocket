@@ -72,18 +72,48 @@ class ServerSocket:
                 # Conecta ao banco de dados
                 db = catalogo.Catalogo()
                 print(f'[LOG] ({addr}, {client_username}) : {data}')
-            
-                # Verifica qual ação foi requisitada ao servidor
+
+
                 if data['action'] == 'query_all':
-                    print('Solicitado query_all')
+
                     response = {"data":[]}
                     query = db.query_items()
 
                     for x in query:
                         response['data'].append({'id': x[0], 'nome': x[1], 'tipo': x[2]})
+
+                    self.send_data(conn, response)
+
+
+                if data['action'] == 'insert_item':
+                    try:
+                        query = db.insert_item(data['item_name'], data['item_type'])
+
+                    except:
+                        print('ERRO AO CADASTRAR ITEM')
+                        response = {"status": 'ERROR'}
+                    finally:
+                        response = {"status": 'OK'}
+
+                    self.send_data(conn, response)
+                
+                if data['action'] == 'search_item':
                     
-                    print(response)
-                    # Enviar json com dados
+                    try:
+                        query = db.search_items(data['item_name'])
+                        response = {"status": "OK", "data":[]}
+
+                        for x in query:
+                            response['data'].append({'id': x[0], 'nome': x[1], 'tipo': x[2]})
+                    
+                    except:
+                        print('ERRO AO BUSCAR ITEM')
+                        print('Resposta: ', query)
+                        response = {"status": "ERROR"}
+
+                    if not response['data']:
+                        response = {"status": "ERROR"}
+
                     self.send_data(conn, response)
 
         finally:
