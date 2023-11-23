@@ -95,12 +95,12 @@ class Catalogo:
         ''')
         return self.c.fetchall()
 
-    def search_items(self, searchname):
+    def search_items(self, searchname: str):
         self.c.execute('''
             SELECT item.itemid, item.itemname, type.typename
             FROM item INNER JOIN type ON item.itemtype = type.typeid
-            WHERE item.itemname LIKE '?%'
-        ''', searchname)
+            WHERE item.itemname LIKE ? ORDER BY item.itemname asc
+        ''', ('%' + searchname + '%',))
         return self.c.fetchall()
 
     def close_connection(self):
