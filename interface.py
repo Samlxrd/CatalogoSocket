@@ -31,18 +31,11 @@ class InterfaceGrafica:
 
         self.USERID = self.get_userid(self.nome_usuario)
 
-        #Label(self.root, text=f"Bem-vindo, {self.nome_usuario}").place(x=50,y=50)
-
         Button(self.root, text="Catalogo", font=('Comic-Sans', 12), command=self.tela_catalogo, width=16, pady=5).place(x=12*8,y=30)
 
         Button(self.root, text="Favoritos", font=('Comic-Sans', 12), command=self.tela_favoritos, width=16, pady=5).place(x=12*8,y=80)
         
         Button(self.root, text="Sair", font=('Comic-Sans', 12), command=self.root.destroy, width=16, pady=5).place(x=12*8,y=130)
-        
-        #Button(self.root, text="Listar Catalogo", font=('Comic-Sans', 12), command=self.opcao_selecionada, width=16, pady=5).place(x=12*16,y=80)
-        #Button(self.root, text="Adicionar", font=('Comic-Sans', 12), command=self.opcao_selecionada, width=16, pady=5).place(x=12*16,y=130)
-
-        
 
         self.root.mainloop()
 
@@ -53,7 +46,6 @@ class InterfaceGrafica:
 
     def opcao_selecionada(self):
         messagebox.showinfo("Opção Selecionada", "Funcionalidade em desenvolvimento.")
-        a = "a0".c
 
     def pop_table(self, query_type):
         self.tabela.delete(*self.tabela.get_children())
