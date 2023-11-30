@@ -4,7 +4,6 @@ from tkinter.simpledialog import askstring
 import client
 
 class InterfaceGrafica:
-
     def __init__(self, SERVER, PORT):
 
         # Janela inicial que solicita um nome de usuário
@@ -20,8 +19,9 @@ class InterfaceGrafica:
         self.client_socket = client.ClientSocket(self.nome_usuario, SERVER, PORT)
         self.main_menu()
 
+
+    # Tela principal, com as opções: Catalogo, Favoritos e Sair
     def main_menu(self):
-        
         self.close_opened_window()
 
         self.root = Tk()
@@ -29,43 +29,49 @@ class InterfaceGrafica:
         self.root.geometry("350x216")
         self.root.resizable(False, False)
 
+        # Salva o id do usuário para facilitar futuras requisições
         self.USERID = self.get_userid(self.nome_usuario)
 
         Button(self.root, text="Catalogo", font=('Comic-Sans', 12), command=self.tela_catalogo, width=16, pady=5).place(x=12*8,y=30)
-
         Button(self.root, text="Favoritos", font=('Comic-Sans', 12), command=self.tela_favoritos, width=16, pady=5).place(x=12*8,y=80)
-        
         Button(self.root, text="Sair", font=('Comic-Sans', 12), command=self.root.destroy, width=16, pady=5).place(x=12*8,y=130)
 
         self.root.mainloop()
 
+
+    # Função responsável por enviar uma requisição
+    # ao servidor e retornar a resposta recebida.
     def request(self, message):
         self.client_socket.send_data(message)
         data = self.client_socket.receive_data()
         return data
 
-    def opcao_selecionada(self):
-        messagebox.showinfo("Opção Selecionada", "Funcionalidade em desenvolvimento.")
 
+    # Função para popular as tabelas (treeviews) da interface.
     def pop_table(self, query_type):
+
+        # Limpa a tabela para evitar possiveis resultados duplicados
         self.tabela.delete(*self.tabela.get_children())
 
+        # Envia requisição para buscar os dados no servidor ou de
+        # todos os itens do catálogo ou dos favoritos do usuário.
         if query_type == 'query_favorites':
             data = self.request({"action": query_type, "user_id": self.USERID})
         else:
-            # Solicita a ação query_all ao servidor e recebe os dados
             data = self.request({"action": query_type})
 
+        # Se teve sucesso ao buscar os dados, adiciona na tabela de exibição
         if data['status'] != 'ERROR':
             lista = data['data']
             for row in lista:
                 r = list(row.values())
                 self.tabela.insert('','end',values=r)
 
+
+    # Evento acionado quando clicado em um item da tabela do catálogo
     def on_item_select(self, event):
         selecionado = self.tabela.focus()
         self.sel = self.tabela.item(selecionado)
-        print(self.sel)
 
         if self.sel['values']:
             self.button_editar['state'] = 'normal'
@@ -76,10 +82,11 @@ class InterfaceGrafica:
             self.button_excluir['state'] = 'disabled'
             self.button_fav['state'] = 'disabled'
 
+
+    # Evento acionado quando clicado em um item da tabela dos favoritos
     def on_item_select_fav(self, event):
         selecionado = self.tabela.focus()
         self.sel = self.tabela.item(selecionado)
-        print(self.sel)
 
         if self.sel['values']:
             self.button_unfav['state'] = 'normal'
@@ -87,12 +94,17 @@ class InterfaceGrafica:
             self.button_unfav['state'] = 'disabled'
 
 
+    # Evento acionado quando selecionado um tipo de item a ser cadastrado
+    # Tipos: Filme, Série, Anime, Outro (Dispostos em uma combobox)
     def on_combobox_select(self, event):
         self.selected_type = self.type_select.get()
-        print('Selecionado: ', self.selected_type)
 
+
+    # Função responsável por tratar e enviar ao servidor
+    # a requisição de adicionar um item ao catálogo.
     def inserir(self, nome, tipo):
 
+        # Verifica se todos os campos foram preenchidos
         if  nome == '':
             messagebox.showerror("FieldError", "Insira o nome do item a ser cadastrado.")
             return
@@ -106,31 +118,39 @@ class InterfaceGrafica:
             messagebox.showerror("FieldError", "Selecione corretamente um dos tipos da lista.")
             return
         
+        # Envia requisição e recebe resposta do servidor
         response = self.request(message = {"action": "insert_item", "item_name": nome, "item_type": tipo})
         
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Falha ao cadastrar o item.')
             return
 
+        # Exibe mensagem de sucesso e popula a tabela com os dados recebidos.
         messagebox.showinfo(title='Mensagem do servidor', message='Item cadastrado com sucesso.')
         self.pop_table("query_all")
 
-    def buscar(self, nome, query="search_item"):
 
+    # Função responsável por tratar e enviar ao servidor
+    # a requisição de busca de itens no catálogo.
+    def buscar(self, nome, query="search_item"):
+        
+        # Verifica se foi inserido texto no campo de busca.
         if nome == '':
             messagebox.showerror("FieldError", "Insira o nome do item a pesquisar")
             return
         
+        # Envia requisição ao servidor de busca no catalogo
+        # ou busca somente nos favoritos do usuário.
         if query == 'search_item':
             response = self.request(message = {"action": query, "item_name": nome})
         else:
             response = self.request(message = {"action": query, "user_id":self.USERID, "item_name": nome})
 
-
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Item não encontrado.')
             return
 
+        # Extrai os dados da resposta do servidor e exibe na tabela.
         data = response['data']
         self.show_search(data)   
 
@@ -215,21 +235,29 @@ class InterfaceGrafica:
         messagebox.showinfo(title='Mensagem do servidor', message='Item removido dos favoritos.')
         self.tabela.delete(self.tabela.selection())
 
+
+    # Função recebe dados (tuplas) e exibe na tabela da tela atual.
     def show_search(self, data):
+        # Limpa a tabela para evitar possiveis resultados duplicados
         self.tabela.delete(*self.tabela.get_children())
 
+        # Popula a tabela
         for row in data:
             r = list(row.values())
             self.tabela.insert('','end',values=r)
 
+
+    # Função responsável por fechar a tela que está aberta no momento.
     def close_opened_window(self):
         try:
             self.root.destroy()
         except AttributeError:
             return
 
-    def tela_catalogo(self):
 
+    # Função responsável por exibir a janela do catálogo
+    # e todas suas funcionalidades disponíveis.
+    def tela_catalogo(self):
         self.close_opened_window()
 
         self.root = Tk()
@@ -237,10 +265,11 @@ class InterfaceGrafica:
         self.root.resizable(False, False)
         self.root.geometry('600x550')
 
-        # Seção Catálogo
+        # Seção Catálogo -------------------------------------------------------
         self.area_catalogo = LabelFrame(self.root, text="Catalogo")
         self.area_catalogo.pack(fill="both", expand="yes", padx=10, pady=10)
 
+        # Cria a tabela que comportará os dados
         self.tabela = ttk.Treeview(self.area_catalogo, columns=('id', 'nome', 'tipo'), show='headings')
         self.tabela.column('id', minwidth=0, width=50)
         self.tabela.column('nome', minwidth=0, width=200)
@@ -250,7 +279,7 @@ class InterfaceGrafica:
         self.tabela.heading('tipo', text='Tipo')
         self.tabela.pack(expand=True, side='left', ipadx=50)
         
-        # Populando a tabela com 
+        # Populando a tabela
         self.pop_table("query_all")
         self.tabela.bind('<<TreeviewSelect>>', self.on_item_select)
 
@@ -259,7 +288,8 @@ class InterfaceGrafica:
         scrollbar_y.pack(side="right", fill="y")
         self.tabela.configure(yscrollcommand=scrollbar_y.set)
 
-        # Seção Opções
+
+        # Seção Opções ----------------------------------------------------------
         self.area_edit = LabelFrame(self.root, text="Opções")
         self.area_edit.pack(padx=10, ipady=10)
 
@@ -277,7 +307,7 @@ class InterfaceGrafica:
         self.button_excluir.pack(side='left', padx=10)
         
 
-        # Seção adicionar
+        # Seção adicionar -------------------------------------------------------
         area_add = LabelFrame(self.root, text='Adicionar item')
         area_add.pack(expand='yes', ipady=10)
         
@@ -290,7 +320,6 @@ class InterfaceGrafica:
         label_tipo.pack(side='left')
 
         self.tipos = ["Filme", "Série", "Anime", "Outro"]
-        
         self.type_select = ttk.Combobox(area_add, value=self.tipos)
         self.type_select.pack(side='left', padx=10)
         self.type_select.bind("<<ComboboxSelected>>", self.on_combobox_select)
@@ -298,7 +327,8 @@ class InterfaceGrafica:
         button_inserir = Button(area_add, text='Adicionar', command=lambda: self.inserir(entry_nome.get(), self.type_select.get()))
         button_inserir.pack(side='left', padx=10)
 
-        # Seção Pesquisar
+
+        # Seção Pesquisar -------------------------------------------------------
         area_search = LabelFrame(self.root, text='Pesquisar item')
         area_search.pack(expand='yes', ipady=10)
         label_nome2 = Label(area_search, text='Nome:')
@@ -318,6 +348,9 @@ class InterfaceGrafica:
 
         self.root.mainloop()
 
+
+    # Função responsável por exibir uma pequena interface
+    # para alteração de um item selecionado no catálogo.
     def tela_editar(self, fields):
 
         self.close_opened_window()
@@ -337,7 +370,6 @@ class InterfaceGrafica:
         label_tipo.pack(side='left')
 
         self.tipos = ["Filme", "Série", "Anime", "Outro"]
-        
         self.type_select = ttk.Combobox(self.root, value=self.tipos)
         self.type_select.insert(0, fields[2])
         self.type_select.pack(side='left', padx=10)
@@ -349,6 +381,9 @@ class InterfaceGrafica:
         button_cancelar = Button(self.root, text='Cancelar', width=10, command=self.tela_catalogo)
         button_cancelar.pack(side='left', padx=10)
 
+
+    # Função responsável por exibir a janela dos itens favoritados
+    # pelo usuário, permitindo buscar itens e desfavoritá-los.
     def tela_favoritos(self):
         self.close_opened_window()
 
@@ -357,7 +392,7 @@ class InterfaceGrafica:
         self.root.resizable(False, False)
         self.root.geometry('600x550')
 
-        # Seção Catálogo
+        # Seção Catálogo de Favoritos
         self.area_catalogo = LabelFrame(self.root, text="Catalogo")
         self.area_catalogo.pack(fill="both", expand="yes", padx=10, pady=10)
 
@@ -370,7 +405,7 @@ class InterfaceGrafica:
         self.tabela.heading('tipo', text='Tipo')
         self.tabela.pack(expand=True, side='left', ipadx=50)
         
-        # Populando a tabela com 
+        # Populando a tabela com os itens favoritos do usuário
         self.pop_table("query_favorites")
         self.tabela.bind('<<TreeviewSelect>>', self.on_item_select_fav)
 
@@ -380,7 +415,7 @@ class InterfaceGrafica:
         self.tabela.configure(yscrollcommand=scrollbar_y.set)
 
 
-        # Seção Opções
+        # Seção Opções ----------------------------------------------------------
         self.area_edit = LabelFrame(self.root, text="Opções")
         self.area_edit.pack(padx=20, ipady=10)
 
@@ -390,7 +425,7 @@ class InterfaceGrafica:
         self.button_unfav.pack(side='left', padx=10)
 
 
-        # Seção Pesquisar
+        # Seção Pesquisar -------------------------------------------------------
         area_search = LabelFrame(self.root, text='Pesquisar item')
         area_search.pack(expand='yes', ipady=10)
         label_nome2 = Label(area_search, text='Nome:')
@@ -419,7 +454,7 @@ def main():
     app = InterfaceGrafica(SERVER, PORT)
     while True:
         if not app:
-            print('fechou')
+            print('Aplicação encerrada.')
 
 if __name__ == "__main__":
     main()
