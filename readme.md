@@ -108,42 +108,52 @@ Esse fluxo geral oferece uma visão panorâmica de como os usuários interagem c
    * Mensagem enviada pelo cliente: `{"action": "query_all"}`
    * Mensagem enviada pelo servidor: `{"status": "OK", "data":[]}` onde data[] contém `{'id': id_do_item, 'nome': nome_do_item, 'tipo': tipo_do_item}` para cada item encontrado.
    * Gatilho: Usuário clica no botão "Catálogo" na interface principal ou no botão "Mostrar todos" na seção pesquisar da interface do catálogo.
+ 
  * query_favorites: Evento acionado quando o cliente solicita a consulta de todos os itens favoritados por um usuário específico.
    * Mensagem enviada pelo cliente: `{"action": "query_favorites", "user_id": id_do_usuario}`
    * Mensagem enviada pelo servidor: `{"status": "OK", "data":[]}` onde data[] contém `{'id': id_do_item, 'nome': nome_do_item, 'tipo': tipo_do_item}` para cada item encontrado.
    * Gatilho: Usuário clica no botão "Favoritos" na interface principal ou no botão "Mostrar todos" na seção pesquisar da interface de favoritos.
+
  * insert_item: Evento que ocorre quando o cliente solicita a inserção de um novo item no catálogo.
    * Mensagem enviada pelo cliente: `{"action": "insert_item", "item_name": nome_do_item, "item_type": tipo_do_item}`
    * Mensagem enviada pelo servidor: `{"status": "OK"}`
    * Gatilho: Usuário clica no botão "Adicionar" na seção adicionar da interface do catálogo.
+ 
  * insert_favorite: Evento acionado quando o cliente solicita a adição de um item aos favoritos de um usuário.
    * Mensagem enviada pelo cliente: `{"action" : "insert_favorite", "user_id": id_do_usuario, "item_id": id_do_item}`
    * Mensagem enviada pelo servidor: `{"status": "OK"}`
    * Gatilho: Usuário clica no botão "Favoritar" na seção opções da interface do catálogo.
+
  * get_userid: Evento que ocorre quando o cliente solicita a obtenção do ID de um usuário com base no nome do usuário do cliente conectado.
    * Mensagem enviada pelo cliente: `{"action" : "get_userid", "user_name" : nome_do_usuario}`
    * Mensagem enviada pelo servidor: `{"status": "OK", "data":[]}` onde data[] contém `{'user_id': id}`.
    * Gatilho: Evento acionado quando o usuário é direcionado à tela principal.
+ 
  * search_item: Evento acionado quando o cliente solicita uma busca por itens no catálogo.
    * Mensagem enviada pelo cliente: `{"action": query, "item_name": nome_do_item}`
    * Mensagem enviada pelo servidor: `{"status": "OK", "data":[]}` onde data[] contém `{'id': id_do_item, 'nome': nome_do_item, 'tipo': tipo_do_item}` para cada item encontrado.
    * Gatilho: Usuário clica no botão "Buscar" na seção pesquisar da interface do catálogo.
+ 
  * search_favorite: Evento ocorre quando o cliente solicita uma busca por itens favoritos de um usuário.
    * Mensagem enviada pelo cliente: `{"action": query, "user_id": id_do_usuario, "item_name": nome_do_usuario}`
    * Mensagem enviada pelo servidor: `{"status": "OK", "data":[]}` onde data[] contém `{'id': id_do_item, 'nome': nome_do_item, 'tipo': tipo_do_item}` para cada item encontrado.
    * Gatilho: Usuário clica no botão "Buscar" na seção pesquisar da interface de favoritos.
+ 
  * update_item: Evento acionado quando o cliente solicita a atualização de informações de um item no catálogo.
    * Mensagem enviada pelo cliente: `{"action" : "update_item", "item_id": id, "item_name": nome, "item_type": tipo}`
    * Mensagem enviada pelo servidor: `{"status": "OK"}`
    * Gatilho: Usuário clica no botão "Editar" da seção opções da interface do catálogo, insere os novos dados do item (nome e/ou tipo) e clica em "Confirmar".
+ 
  * delete_item: Evento que ocorre quando o cliente solicita a exclusão de um item do catálogo.
    * Mensagem enviada pelo cliente: `{"action": "delete_item", "item_id": id}`
    * Mensagem enviada pelo servidor: `{"status": "OK"}`
    * Gatilho: Usuário clica no botão "Excluir" da seção opçoes da interface do catálogo e confirma a ação.
+ 
  * remove_favorite: Evento acionado quando o cliente solicita a remoção de um item dos favoritos de um usuário.
    * Mensagem enviada pelo cliente: `{"action" : "remove_favorite", "item_id": item_id}`
    * Mensagem enviada pelo servidor: `{"status": "OK"}`
    * Gatilho: Usuário clica no botão "Remover dos Favoritos" da seção opções na interface de favoritos.
+ 
  * Exception / Error: Corresponde a qualquer falha operacional no servidor em resposta a uma requisição do usuário.
    * Mensagem enviada pelo servidor: `{"status": "ERROR"}`
    * Tratamento: Após cada requisição do cliente, ele verifica a resposta do servidor e caso seja essa mensagem de erro, exibe na tela do usuário um pop-up informando que a operação correspondente obteve falha.
