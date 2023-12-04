@@ -1,46 +1,61 @@
-# Protocolo
+#Catalogo Socket
 
-## Partes Envolvidas
+### Propósito do software:
 
-→ Cliente: A interface de usuário onde o usuário interage com o catálogo.
-→ Servidor: A parte que mantém e gerencia a base de dados do catálogo.
+O "CatalogoSocket" é um software distribuído projetado para permitir o registro de itens, armazenando informações como nomes e tipos (filmes, animes, séries, entre outros). Além disso, os usuários têm a capacidade de adicionar itens à sua lista de favoritos para facilitar a visualização.
 
+### Motivação da Escolha do Protocolo de Transporte:
 
-## Objetivos
-→ Permitir que o cliente consulte, adicione, edite e exclua itens do catálogo.
-→ Manter a base de dados do servidor do catálogo sincronizada com as ações do cliente. 
+O "CatalogoSocket" lida com operações críticas de banco de dados, como o registro de itens e atualizações na lista de favoritos dos usuários. Essas operações exigem um nível de confiabilidade na entrega de dados para garantir a integridade das informações.
 
+Dessa forma, a escolha do TCP se alinha com as necessidades de garantir que todas as transações relacionadas ao banco de dados sejam concluídas com sucesso, evitando a perda de informações relacionadas às operações dos clientes com o servidor.
 
-# Eventos relevantes do sistema
+### Requisitos Mínimos de Funcionamento:
 
-→ Evento de Adição ao catálogo:
-    - Cliente solicita adição de um novo filme no catálogo.
-    - Servidor recebe a solicitação e adiciona o filme ao catálogo.
+Python:
+- O software foi implementado em Python 3.10.5, portanto, é necessário ter o interpretador Python instalado nos ambientes onde serão executados o cliente e servidor.
 
-→ Evento de Consulta ao catálogo:
-    - Cliente solicita consulta a um item do catálogo.
-    - Servidor recebe a solicitação e exibe o(s) item(ns) do catálogo.
+Bibliotecas Utilizadas:
 
-→ Evento de Exclusão ao catálogo:
-    - Cliente solicita exclusão de um item do catálogo.
-    - Servidor recebe a solicitação e remove o item do catálogo.
+- socket: Facilita a implementação da comunicação via rede entre clientes e servidor.
 
-→ Evento de Alteração ao catálogo:
-    - Cliente solicita alteração no catálogo.
-    - Servidor recebe a solicitação e altera o item do catálogo.
+- threading: Permite a execução simultânea de diferentes operações, foi usado principalmente para lidar separadamente com as conexões dos clientes.
 
-→ Evento de Erro:
-    - Cliente fez alguma solicitação que o sistema identificou erro.
-    - Servidor notifica o cliente sobre o problema e sua provável causa.
+- tkinter: Utilizada para a criação da interface gráfica, proporcionando uma experiência amigável aos usuários.
 
+- json: Usado para facilitar a troca de informações estruturadas entre clientes e servidor.
 
+- sqlite3: Essencial para a integração do banco de dados SQLite, permitindo o armazenamento persistente de informações sobre usuários, itens do catálogo e listas de favoritos.
 
+### Funcionamento do Software:
+* Lado do Cliente:
 
-# Padrão de Envio do Cliente
+ `client.py` - Comunicação com o Servidor:
+ - O arquivo client.py gerencia a comunicação entre o cliente e o servidor. Ele estabelece uma conexão via socket, envia solicitações ao servidor e recebe as respostas correspondentes. Essa comunicação é vital para operações no catálogo.
 
-→ Pesquisar - {nome}
-→ Adicionar - {nome, tipo}
-→ Favoritos - {userid}
-→ Alterar - {userid}
-→ Excluir - {userid}
-→ X
+ `interface.py` - Usabilidade Aprimorada:
+ - O componente de interface gráfica fornece uma experiência amigável ao usuário. Ele apresenta opções disponíveis, recebe entradas do usuário e interage com o arquivo client.py para realizar operações desejadas. A navegação consistente simplifica a interação do usuário com o sistema.
+ 
+* Lado do Servidor:
+
+ `catalogo.py` - Operações no Banco de Dados:
+ - Esse componente é responsável por se conectar e gerenciar as operações no banco de dados SQLite. Ele lida com a criação das tabelas, inserção de novos usuários, recuperação de dados relacionados aos itens registrados e todas as demais operações disponíveis do sistema.
+
+ `server.py` - Gerenciamento de Conexões:
+ - O arquivo server.py é crucial para o funcionamento do lado do servidor. Ele gerencia as conexões dos clientes, cria threads para lidar com várias solicitações simultâneas e roteia as requisições para as operações adequadas no arquivo catalogo.py. Garante, assim, uma resposta eficiente a todas as solicitações dos clientes.
+
+#### Executando o software:
+ * Servidor: 
+  * Abra um terminal ou prompt de comando no diretório onde está localizado o arquivo `server.py`;
+  * Execute o seguinte comando para iniciar o servidor: `python server.py`
+  * O servidor estará agora em execução, aguardando conexões de clientes.
+ 
+ * Cliente:
+  * Abra um terminal ou prompt de comando no diretório onde está localizado o arquivo `interface.py`;
+  * Execute o seguinte comando para iniciar o cliente: `python interface.py`
+  * Uma interface será exibida solicitando um nome de usuário. Tendo confirmado o nome de usuário, será feita a conexão do cliente com o servidor, e uma nova interface será exibida, com as opções disponíveis para o usuário acessar no sistema.
+ 
+**(Certifique-se de que o seu ambiente atende aos Requisitos Mínimos de Funcionamento e o servidor está com host e porta configurados corretamente.)**
+ 
+#### Fluxo Geral do Software:
+ 
