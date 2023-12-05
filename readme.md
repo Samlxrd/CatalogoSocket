@@ -199,7 +199,7 @@ Esse fluxo geral oferece uma visão panorâmica de como os usuários interagem c
   |     -->       |          msg: query_all             |              |
   |               |   OK + Itens do catálogo ou ERROR   |      <--     |
   |     -->       |    msg: query_favorites + dados     |              |
-  |     -->       |   OK + Itens favoritados ou ERROR   |              |
+  |               |   OK + Itens favoritados ou ERROR   |      <--     |
   |     -->       |      msg: insert_item + dados       |              |
   |               |            OK ou ERROR              |      <--     |
   |     -->       |    msg: insert_favorite + dados     |              |
