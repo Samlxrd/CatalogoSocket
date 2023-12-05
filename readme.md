@@ -188,6 +188,38 @@ Esse fluxo geral oferece uma visão panorâmica de como os usuários interagem c
    * update_item: `{"action" : "update_item", "item_id": id, "item_name": nome, "item_type": tipo}`: O cliente solicita a atualização de informações de um item no catálogo.
    * delete_item: `{"action": "delete_item", "item_id": id}`: O cliente solicita a exclusão de um item do catálogo.
    * remove_favorite: `{"action" : "remove_favorite", "item_id": item_id}`: O cliente solicita a remoção de um item dos favoritos de um usuário.
+
+  Tabela de Comunicação:
+  | **Cliente**   |           **Operação**              | **Servidor** |
+  |  :---------:  |    :-------------------------:      | :----------: |
+  |     -->       |         Requisita conexão           |              |
+  |               |         Estabelece conexão          |      <--     |
+  |     -->       |        Envia nome de usuário        |              |
+  |               |        Retorna id do usuário        |      <--     |
+  |     -->       |          msg: query_all             |              |
+  |               |   OK + Itens do catálogo ou ERROR   |      <--     |
+  |     -->       |    msg: query_favorites + dados     |              |
+  |     -->       |   OK + Itens favoritados ou ERROR   |              |
+  |     -->       |      msg: insert_item + dados       |              |
+  |               |            OK ou ERROR              |      <--     |
+  |     -->       |    msg: insert_favorite + dados     |              |
+  |               |            OK ou ERROR              |      <--     |
+  |     -->       |       msg: get_userid + dados       |              |
+  |               |     OK + id do usuario ou ERROR     |      <--     |
+  |     -->       |      msg: search_item + dados       |              |
+  |               |   OK + itens encontrados ou ERROR   |      <--     |
+  |     -->       |     msg: search_favorite + dados    |              |
+  |               |   OK + itens encontrados ou ERROR   |      <--     |
+  |     -->       |      msg: update_item + dados       |              |
+  |               |            OK ou ERROR              |      <--     |
+  |     -->       |      msg: delete_item + dados       |              |
+  |               |            OK ou ERROR              |      <--     |
+  |     -->       |     msg: remove_favorite + dados    |              |
+  |               |            OK ou ERROR              |      <--     |
+
+  * Dados:
+    Para simplificar a tabela, dados foi generalizado. Entretanto, dados abrange todas as informações associadas às respectivas ações requisitadas, como descrito em [Eventos](#eventos) e [Mensagens](#mensagens).
+
  
 
 
