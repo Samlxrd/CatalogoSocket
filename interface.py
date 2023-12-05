@@ -154,33 +154,41 @@ class InterfaceGrafica:
         data = response['data']
         self.show_search(data)   
 
+    # Função responsável por tratar e enviar ao servidor
+    # a requisição de exclusão de item do catálogo.
     def excluir(self, id):
 
+        # Solicita que o usuário confirme que quer excluir o item.
         if not messagebox.askyesno(title='Mensagem do servidor', message='Tem certeza que quer excluir o item ?'):
             return
 
+        # Envia requisição e recebe resposta do servidor
         response = self.request(message = {"action": "delete_item", "item_id": id})
 
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Falha ao excluir o item do catálogo.')
             return
         
+        # Remove o item da tabela
         self.tabela.delete(self.tabela.selection())
 
+        # Exibe mensagem de sucesso.
         messagebox.showinfo(title='Mensagem do servidor', message='Item excluido com sucesso.')
 
     def editar(self, id, nome, tipo):
 
+        # Solicita que o usuário confirme que quer alterar o item.
         if not messagebox.askyesno(title='Mensagem do servidor', message='Tem certeza que quer alterar o item ?'):
             return
 
+        # Verifica se todos os campos foram preenchidos
         if  nome == '':
             messagebox.showerror("FieldError", "Insira o nome do item a ser atualizado.")
             return
         if  tipo == '':
             messagebox.showerror("FieldError", "Selecione o tipo de item a ser atualizado.")
             return
-
+    
         try: 
             tipo = self.tipos.index(tipo) + 1
 
@@ -188,50 +196,63 @@ class InterfaceGrafica:
             messagebox.showerror("FieldError", "Selecione corretamente um dos tipos da lista.")
             return
         
+        # Envia requisição e recebe resposta do servidor
         response = self.request(message = {"action" : "update_item", "item_id": id, "item_name": nome, "item_type": tipo})
 
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Falha ao atualizar o item.')
             return
 
+        # Exibe mensagem de sucesso.
         messagebox.showinfo(title='Mensagem do servidor', message='Item atualizado com sucesso.')
 
         self.tela_catalogo()
 
+    # Função responsável por requisitar ao servidor o ID do cliente de acordo com o nome do usuário.
     def get_userid(self, username):
-         
+        
+        # Envia requisição e recebe resposta do servidor
         response = self.request(message = {"action" : "get_userid", "user_name" : username})
 
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Falha ao buscar id de usuário.')
             return
         
+        # Retorna o id do usuário
         return response['data'][0]['user_id']
 
+    # Função responsável por adicionar um item aos favoritos do usuário.
     def favoritar(self, item_id):
 
+        # Solicita que o usuário confirme que quer adicionar o item aos favoritos.
         if not messagebox.askyesno(title='Mensagem do servidor', message='Deseja adicionar esse item aos favoritos?'):
             return
         
+        # Envia requisição e recebe resposta do servidor.
         response = self.request(message = {"action" : "insert_favorite", "user_id": self.USERID, "item_id": item_id})
 
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Falha ao favoritar o item.')
             return
 
+        # Exibe mensagem de sucesso.
         messagebox.showinfo(title='Mensagem do servidor', message='Item adicionado aos favoritos.')
 
+    # Função responsável por remover um item dos favoritos do usuário.
     def desfavoritar(self, item_id):
 
+        # Solicita que o usuário confirme que quer remover o item dos favoritos.
         if not messagebox.askyesno(title='Mensagem do servidor', message='Deseja remover esse item dos favoritos?'):
             return
         
+        # Envia requisição e recebe resposta do servidor.
         response = self.request(message = {"action" : "remove_favorite", "item_id": item_id})
 
         if response['status'] == 'ERROR':
             messagebox.showwarning(title='Mensagem do servidor', message='Falha remover item dos favoritos.')
             return
-
+        
+        # Exibe mensagem de sucesso e remove o item da tabela de favoritos.
         messagebox.showinfo(title='Mensagem do servidor', message='Item removido dos favoritos.')
         self.tabela.delete(self.tabela.selection())
 
